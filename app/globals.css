@@ -1,0 +1,247 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-syne: 'Syne', sans-serif;
+    --font-dm-sans: 'DM Sans', sans-serif;
+    --font-jetbrains: 'JetBrains Mono', monospace;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    background: #09090b;
+    color: #fafafa;
+    font-family: var(--font-dm-sans);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-syne);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  ::selection {
+    background: rgba(249, 115, 22, 0.3);
+    color: #fff;
+  }
+}
+
+@layer components {
+  /* ── NOISE TEXTURE ── */
+  .noise::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.35;
+  }
+
+  /* ── BUTTONS ── */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 font-body font-semibold
+           rounded-synlo-sm transition-all duration-200 cursor-pointer
+           select-none whitespace-nowrap;
+  }
+
+  .btn-primary {
+    @apply btn bg-accent text-zinc-950 hover:bg-orange-400
+           hover:-translate-y-px hover:shadow-glow-sm active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply btn border border-zinc-700 text-zinc-400 bg-transparent
+           hover:text-zinc-100 hover:border-zinc-500;
+  }
+
+  .btn-danger {
+    @apply btn bg-red-500/10 border border-red-500/30 text-red-400
+           hover:bg-red-500/20 hover:border-red-500/50;
+  }
+
+  .btn-sm   { @apply text-sm px-4 py-2; }
+  .btn-md   { @apply text-sm px-5 py-2.5; }
+  .btn-lg   { @apply text-base px-6 py-3; }
+  .btn-xl   { @apply text-base px-8 py-4; }
+  .btn-full { @apply w-full py-3 text-base; }
+
+  /* ── INPUTS ── */
+  .input {
+    @apply w-full px-4 py-3 rounded-synlo-sm font-body text-sm
+           bg-zinc-900 border border-zinc-800 text-zinc-100
+           placeholder:text-zinc-600 outline-none
+           transition-all duration-200
+           focus:border-accent focus:ring-2 focus:ring-accent/20;
+  }
+
+  .input-error {
+    @apply border-red-500/60 focus:border-red-500 focus:ring-red-500/20;
+  }
+
+  .label {
+    @apply block text-sm font-medium text-zinc-400 mb-2;
+  }
+
+  /* ── CARDS ── */
+  .card {
+    @apply bg-zinc-900 border border-zinc-800 rounded-synlo;
+  }
+
+  .card-elevated {
+    @apply bg-zinc-900 border border-zinc-800 rounded-synlo shadow-elevated;
+  }
+
+  .card-hover {
+    @apply card transition-all duration-200
+           hover:-translate-y-1 hover:border-zinc-600 hover:shadow-elevated
+           cursor-pointer;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    @apply inline-flex items-center gap-1 px-2.5 py-1 rounded-full
+           text-xs font-semibold border uppercase tracking-wider;
+  }
+
+  /* ── SECTION LABELS ── */
+  .section-label {
+    @apply text-xs font-semibold text-accent uppercase tracking-widest mb-2;
+  }
+
+  /* ── SCROLLBAR ── */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: #3f3f46 transparent;
+  }
+  .scrollbar-thin::-webkit-scrollbar { width: 4px; }
+  .scrollbar-thin::-webkit-scrollbar-track { background: transparent; }
+  .scrollbar-thin::-webkit-scrollbar-thumb { background: #3f3f46; border-radius: 4px; }
+
+  /* ── SHIMMER SKELETON ── */
+  .skeleton {
+    @apply bg-zinc-800 rounded animate-pulse;
+  }
+
+  .shimmer {
+    background: linear-gradient(90deg, #1c1c1e 25%, #27272a 50%, #1c1c1e 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+  }
+
+  /* ── DIVIDER ── */
+  .divider { @apply h-px bg-zinc-800; }
+
+  /* ── STAT CARD ── */
+  .stat-card {
+    @apply card p-5 flex flex-col gap-1;
+  }
+  .stat-value {
+    @apply font-display text-2xl font-bold text-zinc-50;
+  }
+  .stat-label {
+    @apply text-xs text-zinc-500 uppercase tracking-wider;
+  }
+  .stat-change-up   { @apply text-xs text-green-400 font-medium; }
+  .stat-change-down { @apply text-xs text-red-400 font-medium; }
+
+  /* ── TICKET CARD ── */
+  .ticket-card {
+    @apply relative overflow-hidden rounded-synlo border border-zinc-800
+           bg-zinc-900 p-6;
+  }
+  .ticket-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, transparent, #f97316, transparent);
+  }
+  .ticket-perforation {
+    @apply relative my-4 flex items-center;
+  }
+  .ticket-perforation::before,
+  .ticket-perforation::after {
+    content: '';
+    @apply flex-1 border-t border-dashed border-zinc-700;
+  }
+  .ticket-perforation::before { margin-right: -10px; }
+  .ticket-perforation::after  { margin-left: -10px; }
+
+  /* ── DASHBOARD SIDEBAR ── */
+  .sidebar-link {
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-synlo-sm
+           text-sm font-medium text-zinc-400 transition-all duration-150
+           hover:text-zinc-100 hover:bg-zinc-800/60;
+  }
+  .sidebar-link.active {
+    @apply text-zinc-100 bg-zinc-800 border border-zinc-700;
+  }
+
+  /* ── STATUS BADGES ── */
+  .status-active   { @apply badge text-green-400 bg-green-500/10 border-green-500/25; }
+  .status-draft    { @apply badge text-zinc-400 bg-zinc-500/10 border-zinc-500/25; }
+  .status-cancelled{ @apply badge text-red-400 bg-red-500/10 border-red-500/25; }
+  .status-used     { @apply badge text-zinc-500 bg-zinc-800 border-zinc-700; }
+  .status-pending  { @apply badge text-yellow-400 bg-yellow-500/10 border-yellow-500/25; }
+  .status-success  { @apply badge text-green-400 bg-green-500/10 border-green-500/25; }
+
+  /* ── PAGE WRAPPERS ── */
+  .page-container {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+  .section {
+    @apply py-16 md:py-24;
+  }
+}
+
+/* ── ANIMATIONS ── */
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.animate-fade-up  { animation: fadeUp 0.5s ease both; }
+.animate-fade-in  { animation: fadeIn 0.3s ease both; }
+.animate-scale-in { animation: scaleIn 0.2s ease both; }
+
+.delay-100 { animation-delay: 0.1s; }
+.delay-200 { animation-delay: 0.2s; }
+.delay-300 { animation-delay: 0.3s; }
+.delay-400 { animation-delay: 0.4s; }
+
+/* ── PRINT STYLES (Ticket PDF) ── */
+@media print {
+  body { background: white; color: black; }
+  .no-print { display: none !important; }
+  .print-only { display: block !important; }
+}
