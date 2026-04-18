@@ -1,5 +1,6 @@
 // app/(app)/dashboard/page.tsx
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 import { ArrowRight, Plus, Ticket, Users, BarChart3, Zap } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 import { EventCard } from '@/components/events/EventCard'
@@ -9,20 +10,37 @@ export default async function DashboardPage() {
   const supabase = createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  const [{ data: profile }, { data: tickets }, { data: upcomingEvents }] = await Promise.all([
-    supabase.from('users').select('*').eq('id', user!.id).single(),
+  const { data: profile } = await supabase.from('users').select('*').eq('id', user!.id).single()
+
+  if (profile?.role === 'organizer') {
+    redirect('/organizer')
+  } else {
+    redirect('/profile')
+  }
+
+  const [{ data: tickets }, { data: usedTickets }, { data: affiliateStats }, { data: matches }, { data: upcomingEvents }] = await Promise.all([
     supabase.from('tickets')
       .select('*, event:events(*, ticket_tiers(*)), tier:ticket_tiers(*)')
       .eq('user_id', user!.id)
       .eq('status', 'active')
       .order('created_at', { ascending: false })
-      .limit(3),
+      .limit(5),
+    supabase.from('tickets')
+      .select('*')
+      .eq('user_id', user!.id)
+      .eq('status', 'used'),
+    supabase.from('affiliates')
+      .select('total_earned, total_withdrawn')
+      .eq('user_id', user!.id),
+    supabase.from('matches')
+      .select('*')
+      .or(`user_id_1.eq.${user!.id},user_id_2.eq.${user!.id}`),
     supabase.from('events')
       .select('*, ticket_tiers(*)')
       .eq('status', 'published')
       .gte('starts_at', new Date().toISOString())
-      .order('starts_at')
-      .limit(6),
+      .order('tickets_sold', { ascending: false })
+      .limit(4),
   ])
 
   const hour = new Date().getHours()
@@ -57,19 +75,19 @@ export default async function DashboardPage() {
       </div>
 
       <div className="page-container py-8 space-y-12">
-        {/* Quick actions */}
+        {/* Quick stats row */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {[
-            { icon: <Ticket className="w-5 h-5" />, label: 'My Tickets', href: '/tickets', count: tickets?.length || 0, color: 'text-accent' },
-            { icon: <Users className="w-5 h-5" />, label: 'Affiliate', href: '/affiliate', count: null, color: 'text-purple-400' },
-            { icon: <BarChart3 className="w-5 h-5" />, label: 'Organiser', href: '/organizer', count: null, color: 'text-teal-400' },
-            { icon: <Zap className="w-5 h-5" />, label: 'Explore', href: '/explore', count: null, color: 'text-yellow-400' },
-          ].map(({ icon, label, href, count, color }) => (
-            <Link key={href} href={href} className="card-hover p-4 flex flex-col gap-2">
-              <div className={`${color}`}>{icon}</div>
-              <p className="font-semibold text-sm text-zinc-100">{label}</p>
-              {count !== null && <p className="text-xs text-zinc-500">{count} active</p>}
-            </Link>
+            { icon: <Ticket className="w-5 h-5" />, label: 'My Tickets', value: tickets?.length || 0, color: 'text-accent' },
+            { icon: <Users className="w-5 h-5" />, label: 'Events Attended', value: usedTickets?.length || 0, color: 'text-purple-400' },
+            { icon: <BarChart3 className="w-5 h-5" />, label: 'Affiliate Earnings', value: formatNaira(affiliateStats?.[0]?.total_earned || 0), color: 'text-teal-400' },
+            { icon: <Zap className="w-5 h-5" />, label: 'Plus One Matches', value: matches?.length || 0, color: 'text-yellow-400' },
+          ].map(({ icon, label, value, color }) => (
+            <div key={label} className="card p-4">
+              <div className={`${color} mb-3`}>{icon}</div>
+              <p className="text-xs text-zinc-500 mb-1">{label}</p>
+              <p className="text-lg font-bold text-zinc-100">{value}</p>
+            </div>
           ))}
         </div>
 

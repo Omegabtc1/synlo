@@ -24,16 +24,46 @@ export default function LoginPage() {
     setError('')
     setLoading(true)
     try {
-      const { error: authError } = await supabase.auth.signInWithPassword({ email, password })
+      const { data: { session }, error: authError } = await supabase.auth.signInWithPassword({ email, password })
       if (authError) {
         setError(authError.message === 'Invalid login credentials'
           ? 'Incorrect email or password. Please try again.'
           : authError.message)
         return
       }
+
+      if (!session) {
+        setError('Login failed. Please try again.')
+        return
+      }
+
+      const sessionResponse = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          access_token: session.access_token,
+          refresh_token: session.refresh_token,
+        }),
+      })
+
+      if (!sessionResponse.ok) {
+        const errorData = await sessionResponse.json()
+        setError(errorData.error || 'Failed to set session')
+        return
+      }
+
       toast.success('Welcome back! 👋')
-      router.push(redirect)
-      router.refresh()
+      
+      // Check for redirect param first
+      if (redirect && redirect !== '/dashboard') {
+        router.push(redirect)
+      } else {
+        // Let middleware handle redirect to /dashboard
+        router.refresh()
+      }
+    } catch (err) {
+      console.error('Login fetch error:', err)
+      setError('Network error. Please check your connection and try again.')
     } finally {
       setLoading(false)
     }

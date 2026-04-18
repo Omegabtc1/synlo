@@ -5,12 +5,9 @@ import { generateTicketCode } from '@/lib/utils'
 import crypto from 'crypto'
 
 // Verify webhook signature
-function verifyWebhookSignature(payload: string, signature: string): boolean {
-  const hash = crypto
-    .createHmac('sha256', process.env.FLUTTERWAVE_WEBHOOK_SECRET!)
-    .update(payload)
-    .digest('hex')
-  return hash === signature
+function verifyWebhookSignature(signature: string): boolean {
+  const secretHash = process.env.FLUTTERWAVE_WEBHOOK_SECRET // "Vision@2040"
+  return signature === secretHash
 }
 
 export async function POST(request: NextRequest) {
@@ -18,7 +15,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('verif-hash') || ''
 
   // Verify webhook authenticity
-  if (!verifyWebhookSignature(rawBody, signature)) {
+  if (!verifyWebhookSignature(signature)) {
     console.warn('Invalid Flutterwave webhook signature')
     return NextResponse.json({ error: 'Invalid signature' }, { status: 401 })
   }
@@ -90,10 +87,17 @@ export async function POST(request: NextRequest) {
     // Credit affiliate commission
     if (payment.affiliate_id) {
       const commission = Math.round(payment.subtotal * 0.05)
-      await supabase.rpc('credit_affiliate', {
-        p_user_id: payment.affiliate_id,
-        p_event_id: payment.event_id,
-        p_amount: commission,
+      await supabase.rpc('increment_field', {
+        table_name: 'affiliates',
+        row_id: payment.affiliate_id,
+        field_name: 'total_earnings',
+        increment_value: commission,
+      })
+      await supabase.rpc('increment_field', {
+        table_name: 'affiliates',
+        row_id: payment.affiliate_id,
+        field_name: 'total_sales',
+        increment_value: payment.subtotal,
       })
     }
 

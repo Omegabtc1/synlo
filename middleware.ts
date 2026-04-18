@@ -10,6 +10,8 @@ const PROTECTED_ROUTES = [
   '/profile',
   '/verify',
   '/admin',
+  '/plus-one',
+  '/matches',
 ]
 
 const AUTH_ROUTES = ['/login', '/signup']

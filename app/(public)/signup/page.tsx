@@ -31,18 +31,33 @@ export default function SignupPage() {
     setErrors({})
     setLoading(true)
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log('Attempting signup with:', { email: form.email, name: form.name, role: form.role })
+      const { data, error } = await supabase.auth.signUp({
         email: form.email,
         password: form.password,
         options: {
           data: { full_name: form.name, role: form.role },
-          emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+          emailRedirectTo: `http://localhost:3001/auth/callback`,
         },
       })
-      if (error) { setErrors({ form: error.message }); return }
-      toast.success('Account created! Welcome to Synlo 🎉')
-      router.push('/dashboard')
-      router.refresh()
+      console.log('Signup response:', { data, error })
+      if (error) { 
+        console.error('Signup error:', error)
+        setErrors({ form: error.message }); 
+        return 
+      }
+      
+      if (data.user && !data.user.email_confirmed_at) {
+        toast.success('Check your email to confirm your account!')
+        // Don't redirect, let user check email
+      } else {
+        toast.success('Account created! Welcome to Synlo 🎉')
+        router.push('/dashboard')
+        router.refresh()
+      }
+    } catch (err) {
+      console.error('Signup fetch error:', err)
+      setErrors({ form: 'Network error. Please check your connection and try again.' })
     } finally {
       setLoading(false)
     }

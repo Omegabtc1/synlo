@@ -141,15 +141,14 @@ export async function POST(request: NextRequest) {
       data: {
         payment_id: payment.id,
         reference: paymentRef,
-        amount_naira: totalKobo / 100,
-        subtotal_naira: subtotalKobo / 100,
-        platform_fee_naira: platformFeeKobo / 100,
         flutterwave_config: flutterwaveConfig,
         summary: {
-          event_title: event.title,
+          subtotal_naira: subtotalKobo / 100,
+          platform_fee_naira: platformFeeKobo / 100,
+          total_naira: totalKobo / 100,
           tiers: ticketItems.map(item => {
             const tier = event.ticket_tiers.find((t: any) => t.id === item.tier_id)
-            return { name: tier.name, quantity: item.quantity, unit_price: item.unit_price / 100 }
+            return { name: tier.name, quantity: item.quantity, unit_price_naira: item.unit_price / 100 }
           }),
         },
       },

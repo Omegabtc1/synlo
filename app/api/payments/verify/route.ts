@@ -110,12 +110,12 @@ export async function POST(request: NextRequest) {
 
     // Credit affiliate if applicable
     if (payment.affiliate_id) {
-      const commissionKobo = Math.round(payment.subtotal * 0.05)
+      const commission = Math.round(payment.subtotal * 0.05)
       await supabase
         .from('affiliates')
         .update({
-          conversions: supabase.rpc('increment', { x: 1 }) as any,
-          total_earned: supabase.rpc('increment', { x: commissionKobo }) as any,
+          conversions: supabase.rpc('increment_field', { table: 'affiliates', field: 'conversions', amount: 1 }),
+          total_earned: supabase.rpc('increment_field', { table: 'affiliates', field: 'total_earned', amount: commission }),
         })
         .eq('user_id', payment.affiliate_id)
         .eq('event_id', payment.event_id)
